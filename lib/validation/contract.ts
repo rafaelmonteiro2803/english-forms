@@ -20,3 +20,23 @@ export const contractSchema = z
   }));
 
 export type ContractInput = z.infer<typeof contractSchema>;
+
+export const contractUpdateSchema = z
+  .object({
+    id,
+    lessons_per_month: z.coerce.number({ error: 'Enter a number' }).int().min(1, { error: 'At least 1 lesson' }).max(60),
+    price: z.coerce.number({ error: 'Enter a value' }).min(0, { error: 'Cannot be negative' }).max(1_000_000),
+    renewal_date: day,
+    status: z.enum(['active', 'paused', 'ending']),
+  })
+  .transform(({ price, ...c }) => ({ ...c, price_cents: Math.round(price * 100) }));
+
+export const planSchema = z
+  .object({
+    name: z.string({ error: 'Name is required' }).min(2, { error: 'Name is required' }).max(60),
+    lessons_per_month: z.coerce.number({ error: 'Enter a number' }).int().min(1, { error: 'At least 1 lesson' }).max(60),
+    list_price: z.coerce.number({ error: 'Enter a price' }).min(0, { error: 'Cannot be negative' }).max(1_000_000),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'Use a hex color like #3b82f6' }),
+    description: z.string().max(120).optional(),
+  })
+  .transform(({ list_price, ...p }) => ({ ...p, list_price_cents: Math.round(list_price * 100), description: p.description ?? null }));

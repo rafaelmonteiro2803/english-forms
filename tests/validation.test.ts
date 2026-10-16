@@ -103,3 +103,19 @@ describe('assessmentSchema', () => {
     expect(assessmentSchema.safeParse({ student_id: ID, ...scores, fluency: undefined }).success).toBe(false);
   });
 });
+
+describe('contractUpdateSchema and planSchema', () => {
+  it('updates a contract and converts the price', async () => {
+    const { contractUpdateSchema } = await import('@/lib/validation/contract');
+    expect(contractUpdateSchema.parse({ id: ID2, lessons_per_month: '12', price: '3150.5', renewal_date: '2027-11-11', status: 'ending' }))
+      .toMatchObject({ price_cents: 315050, status: 'ending' });
+    expect(contractUpdateSchema.safeParse({ id: ID2, lessons_per_month: '12', price: '10', renewal_date: '2027-11-11', status: 'done' }).success).toBe(false);
+  });
+
+  it('validates plan colors and prices', async () => {
+    const { planSchema } = await import('@/lib/validation/contract');
+    expect(planSchema.parse({ name: 'Executive 1:1', lessons_per_month: '8', list_price: '2400', color: '#3b82f6' }))
+      .toMatchObject({ list_price_cents: 240000, description: null });
+    expect(planSchema.safeParse({ name: 'X1', lessons_per_month: '8', list_price: '2400', color: 'blue' }).success).toBe(false);
+  });
+});
