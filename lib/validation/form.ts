@@ -11,10 +11,16 @@ export function formObject(fd: FormData): Record<string, string | undefined> {
   return out;
 }
 
-export type FormState = { error?: string; fieldErrors?: Record<string, string[] | undefined>; ok?: boolean };
+export type FormState = {
+  error?: string;
+  fieldErrors?: Record<string, string[] | undefined>;
+  /** what the user typed, so the form can show it again (React resets forms after an action) */
+  values?: Record<string, string | undefined>;
+  ok?: boolean;
+};
 
-export function invalid(err: z.ZodError): FormState {
-  return { error: 'Please check the highlighted fields.', fieldErrors: z.flattenError(err).fieldErrors as FormState['fieldErrors'] };
+export function invalid(err: z.ZodError, values?: FormState['values']): FormState {
+  return { error: 'Please check the highlighted fields.', fieldErrors: z.flattenError(err).fieldErrors as FormState['fieldErrors'], values };
 }
 
 export const id = z.guid({ error: 'Pick an option' });

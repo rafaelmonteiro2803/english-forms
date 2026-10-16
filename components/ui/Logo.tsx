@@ -13,7 +13,7 @@ export function Logo({ size = 30, markOnly = false }: { size?: number; markOnly?
       {!markOnly && (
         <span className="leading-none">
           <span className="block text-[15px] font-extrabold tracking-tight text-ink-hi">English Forms</span>
-          <span className="mt-0.5 block text-[9px] font-semibold tracking-[0.16em] text-ink-3">PERFORMANCE INTELLIGENCE</span>
+          <span className="mt-0.5 block whitespace-nowrap text-[9px] font-semibold tracking-[0.16em] text-ink-3">PERFORMANCE INTELLIGENCE</span>
         </span>
       )}
     </span>

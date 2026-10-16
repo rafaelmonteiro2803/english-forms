@@ -1,19 +1,26 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { homeFor } from '@/components/shell/nav';
 import { createClient } from '@/lib/supabase/server';
 import { safeNext, siteOrigin } from '@/lib/http';
 import { emailSchema, signInSchema } from '@/lib/validation/auth';
 import { formObject, invalid, type FormState } from '@/lib/validation/form';
 
 export async function signIn(_: FormState, fd: FormData): Promise<FormState> {
-  const parsed = signInSchema.safeParse(formObject(fd));
-  if (!parsed.success) return invalid(parsed.error);
+  const raw = formObject(fd);
+  const values = { email: raw.email };
+  const parsed = signInSchema.safeParse(raw);
+  if (!parsed.success) return invalid(parsed.error, values);
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { error: 'Email or password is incorrect.' };
-  redirect(safeNext(fd.get('next')));
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) return { error: 'Email or password is incorrect.', values };
+
+  const next = safeNext(fd.get('next'));
+  if (next !== '/') redirect(next);
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+  redirect(homeFor(profile?.role ?? 'student'));
 }
 
 export async function signInWithProvider(fd: FormData) {
@@ -29,8 +36,9 @@ export async function signInWithProvider(fd: FormData) {
 }
 
 export async function sendPasswordReset(_: FormState, fd: FormData): Promise<FormState> {
-  const parsed = emailSchema.safeParse(formObject(fd));
-  if (!parsed.success) return invalid(parsed.error);
+  const raw = formObject(fd);
+  const parsed = emailSchema.safeParse(raw);
+  if (!parsed.success) return invalid(parsed.error, raw);
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${await siteOrigin()}/auth/callback?next=/reset-password`,
