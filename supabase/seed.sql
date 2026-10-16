@@ -82,6 +82,17 @@ from (values (1, 1, 3, 8), (2, 3, 6, 10), (3, 4, 4, 14), (7, 9, 5, 17), (4, 6, 1
      lateral generate_series(1, n) as i,
      (select array['2026-10-01', '2026-10-02', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'] as days) as cal;
 
+-- history: finished lessons in each of the five previous months
+insert into public.lessons (teacher_id, student_id, contract_id, starts_at, duration_min, status)
+select '00000000-0000-0000-0000-000000000002', c.student_id, c.id,
+       make_timestamptz(2026, 10 - m, 1 + (k * 3 + m) % 26, 8 + (k + m) % 10, 0, 0, 'America/Sao_Paulo'),
+       60, 'done'
+from public.contracts c,
+     generate_series(1, 5) as m,
+     lateral generate_series(1, greatest(1, c.lessons_per_month - (m % 3))) as k
+where c.status <> 'paused'
+  and c.start_date <= make_date(2026, 10 - m, 1);
+
 -- an event created directly in Google that still needs linking
 insert into public.google_unlinked_events (google_event_id, teacher_id, summary, starts_at, ends_at) values
   ('seed-unlinked-1', '00000000-0000-0000-0000-000000000002', 'Call with Thiago — contract', '2026-10-15 12:30-03', '2026-10-15 13:30-03');
