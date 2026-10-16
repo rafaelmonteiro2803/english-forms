@@ -5,7 +5,7 @@ import { Icon } from '@/components/ui/Icon';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { requireRole } from '@/lib/auth';
 import { lessonsUsedThisMonth } from '@/lib/data/usage';
-import { addDays, isDay, today, weekStart, zonedParts, zonedTime } from '@/lib/dates';
+import { addDays, isDay, weekStart, zonedParts, zonedTime } from '@/lib/dates';
 import { fmtClock, fmtDayTime } from '@/lib/format';
 import { googleConfigured } from '@/lib/google/oauth';
 import { isSchedulable } from '@/lib/rules/lesson';
