@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState, useState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
@@ -22,6 +23,7 @@ type Props = {
 
 export function NewContractForm({ students, plans, studentId, today, closeHref }: Props) {
   const [state, action] = useActionState(createContract, {});
+  useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
   const [planId, setPlanId] = useState(v?.plan_id ?? plans[0]?.id ?? '');

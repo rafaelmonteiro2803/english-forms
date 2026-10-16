@@ -1,3 +1,4 @@
+import { ActionForm } from '@/components/ui/ActionForm';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ScreenScroll, TopBar } from '@/components/shell/TopBar';
@@ -151,18 +152,18 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
                       <span className="justify-self-start"><StatusPill status={c.status} /></span>
                       <div className="flex justify-end gap-1.5">
                         {(c.status === 'ending' || renewalSoon) && (
-                          <form action={renewContract}>
+                          <ActionForm action={renewContract}>
                             <input type="hidden" name="id" value={c.id} /><input type="hidden" name="back" value={here} />
                             <SubmitButton className="btn-seg border-warning/40 text-warning" pendingLabel="…" aria-label={`Renew ${p.name} for ${s.name}`}>Renew</SubmitButton>
-                          </form>
+                          </ActionForm>
                         )}
-                        <form action={setContractStatus}>
+                        <ActionForm action={setContractStatus}>
                           <input type="hidden" name="id" value={c.id} /><input type="hidden" name="back" value={here} />
                           <input type="hidden" name="status" value={c.status === 'paused' ? 'active' : 'paused'} />
                           <SubmitButton className="btn-seg" pendingLabel="…" aria-label={`${c.status === 'paused' ? 'Resume' : 'Pause'} ${p.name} for ${s.name}`}>
                             {c.status === 'paused' ? 'Resume' : 'Pause'}
                           </SubmitButton>
-                        </form>
+                        </ActionForm>
                         <Link href={withParams(PATH, base, { edit: c.id })} scroll={false} className="btn-seg px-1.5" aria-label={`Edit ${p.name} for ${s.name}`}><Icon name="edit" size={12} /></Link>
                       </div>
                     </li>

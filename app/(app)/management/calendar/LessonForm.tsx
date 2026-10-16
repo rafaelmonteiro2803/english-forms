@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState, useState } from 'react';
 import { GCalMark } from '@/components/ui/Brand';
 import { Field } from '@/components/ui/Field';
@@ -27,6 +28,7 @@ const TIMES = Array.from({ length: (DAY_END_MIN - DAY_START_MIN) / 15 }, (_, i) 
 
 export function LessonForm({ students, contractsByStudent, initial, link, googleEmail, addMeet, closeHref }: Props) {
   const [state, action] = useActionState(saveLesson, {});
+  useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
   const [studentId, setStudentId] = useState(v?.student_id ?? initial.student_id ?? students[0]?.id ?? '');

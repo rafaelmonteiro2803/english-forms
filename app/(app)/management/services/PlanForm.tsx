@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
@@ -11,6 +12,7 @@ import { savePlan } from './actions';
 
 export function PlanForm({ plan, closeHref }: { plan?: Plan; closeHref: string }) {
   const [state, action] = useActionState(savePlan, {});
+  useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
   const formId = 'plan-form';

@@ -1,3 +1,4 @@
+import { ActionForm } from '@/components/ui/ActionForm';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/Avatar';
 import { LinkedInMark } from '@/components/ui/Brand';
@@ -61,14 +62,14 @@ export function StudentDetail({ student: s, avatarUrl, contracts, upcoming, edit
         ) : (
           <p className="text-xs leading-normal text-ink-2">No LinkedIn URL yet. Add it in <Link href={editHref} scroll={false} className="text-brand-bright">Edit</Link>; name and photo sync when the student signs in with LinkedIn.</p>
         )}
-        <form action={syncStudentLinkedIn} className="mt-3 flex items-center justify-between gap-2">
+        <ActionForm action={syncStudentLinkedIn} className="mt-3 flex items-center justify-between gap-2">
           <input type="hidden" name="id" value={s.id} />
           <span className="text-[11px] text-ink-3">{s.linkedin_synced_at ? `Last synced: ${fmtRelative(s.linkedin_synced_at)}` : 'Not synced yet'}</span>
           <SubmitButton className="btn-seg gap-1.5" pendingLabel="Syncing…" disabled={!s.profile_id}
             title={s.profile_id ? undefined : 'Available after the student signs in'}>
             <Icon name="refresh" size={12} />Sync now
           </SubmitButton>
-        </form>
+        </ActionForm>
       </div>
 
       <div className="border-b border-line p-[18px]">
@@ -114,12 +115,12 @@ export function StudentDetail({ student: s, avatarUrl, contracts, upcoming, edit
         ) : <p className="text-xs text-ink-3">Nothing scheduled.</p>}
       </div>
 
-      <form action={setStudentStatus} className="flex items-center justify-between gap-2 p-[18px]">
+      <ActionForm action={setStudentStatus} className="flex items-center justify-between gap-2 p-[18px]">
         <input type="hidden" name="id" value={s.id} />
         <input type="hidden" name="status" value={s.status === 'active' ? 'paused' : 'active'} />
         <span className="text-[11px] text-ink-3">{s.status === 'active' ? 'Pausing hides the student from scheduling.' : 'This student is paused.'}</span>
         <SubmitButton className="btn-seg" pendingLabel="…">{s.status === 'active' ? 'Pause student' : 'Reactivate'}</SubmitButton>
-      </form>
+      </ActionForm>
     </section>
   );
 }

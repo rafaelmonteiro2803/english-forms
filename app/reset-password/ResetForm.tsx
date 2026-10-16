@@ -1,5 +1,6 @@
 'use client';
 
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { SubmitButton } from '@/components/ui/SubmitButton';
@@ -7,6 +8,7 @@ import { updatePassword } from './actions';
 
 export function ResetForm() {
   const [state, action] = useActionState(updatePassword, {});
+  useActionDone(state);
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       <Field label="New password" error={state.fieldErrors?.password}>

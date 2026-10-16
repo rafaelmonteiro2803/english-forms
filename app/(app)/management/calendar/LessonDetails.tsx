@@ -1,3 +1,4 @@
+import { ActionForm } from '@/components/ui/ActionForm';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/Avatar';
 import { GCalMark } from '@/components/ui/Brand';
@@ -29,10 +30,10 @@ export function LessonDetails({ lesson: l, student: s, contract: c, plan: p, use
   const when = `${fmtDayTime(l.starts_at)}–${fmtTime(end)}`;
   const started = Date.parse(l.starts_at) <= Date.now();
   const statusForm = (status: 'done' | 'cancelled' | 'scheduled', label: string, cls: string) => (
-    <form action={setLessonStatus}>
+    <ActionForm action={setLessonStatus}>
       <input type="hidden" name="id" value={l.id} /><input type="hidden" name="status" value={status} /><input type="hidden" name="back" value={closeHref} />
       <SubmitButton className={cls} pendingLabel="…">{label}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 
   return (

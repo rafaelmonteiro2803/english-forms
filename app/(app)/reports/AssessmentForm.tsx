@@ -1,5 +1,6 @@
 'use client';
 
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
@@ -10,6 +11,7 @@ import { saveAssessment } from './actions';
 
 export function AssessmentForm({ lessonId, studentId, current }: { lessonId: string; studentId: string; current?: Assessment | null }) {
   const [state, action] = useActionState(saveAssessment, {});
+  useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
   return (

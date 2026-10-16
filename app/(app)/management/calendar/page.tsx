@@ -1,3 +1,4 @@
+import { ActionForm } from '@/components/ui/ActionForm';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ScreenScroll, TopBar } from '@/components/shell/TopBar';
@@ -123,10 +124,10 @@ export default async function CalendarPage({ searchParams }: { searchParams: SP 
                         <span className="block truncate text-xs font-semibold text-ink-hi">{u.summary}</span>
                         <span className="mono mt-0.5 block text-[10.5px] text-ink-3">{fmtDayTime(u.starts_at)}</span>
                       </Link>
-                      <form action={ignoreGoogleEvent}>
+                      <ActionForm action={ignoreGoogleEvent}>
                         <input type="hidden" name="google_event_id" value={u.google_event_id} /><input type="hidden" name="back" value={here} />
                         <SubmitButton className="icon-btn h-full w-8 text-ink-3" pendingLabel="…" aria-label={`Ignore ${u.summary}`} title="Not a lesson"><Icon name="x" size={13} /></SubmitButton>
-                      </form>
+                      </ActionForm>
                     </li>
                   ))}
                 </ul>

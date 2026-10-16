@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
@@ -20,6 +21,7 @@ type Props = {
 
 export function StudentForm({ student, closeHref, today, teachers }: Props) {
   const [state, action] = useActionState(saveStudent, {});
+  useActionDone(state);
   const e = state.fieldErrors ?? {};
   const s = student;
   // after a failed submit, show what was typed instead of the saved values

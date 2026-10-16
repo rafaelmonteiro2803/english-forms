@@ -1,6 +1,5 @@
 import 'server-only';
 import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 /** Public origin of the app, for OAuth redirect URLs. */
 export async function siteOrigin() {
@@ -14,11 +13,3 @@ export async function siteOrigin() {
 /** Only same-site paths are allowed as post-login destinations. */
 export const safeNext = (next: unknown) =>
   typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') ? next : '/';
-
-/** Redirects to `path` (which may carry its own query) with a toast message. */
-export function redirectWithToast(path: string, message: string, tone: 'ok' | 'error' = 'ok'): never {
-  const url = new URL(path, 'http://x');
-  url.searchParams.set('toast', message);
-  if (tone === 'error') url.searchParams.set('tone', 'error');
-  redirect(url.pathname + url.search);
-}

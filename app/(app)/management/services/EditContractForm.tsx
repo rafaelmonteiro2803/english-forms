@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useActionDone } from '@/components/ui/ActionForm';
 import { useActionState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Icon } from '@/components/ui/Icon';
@@ -12,6 +13,7 @@ import { updateContract } from './actions';
 
 export function EditContractForm({ contract: c, plan, studentName, closeHref }: { contract: Contract; plan: Plan; studentName: string; closeHref: string }) {
   const [state, action] = useActionState(updateContract, {});
+  useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
   const formId = 'edit-contract-form';

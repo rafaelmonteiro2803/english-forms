@@ -1,11 +1,9 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/auth';
-import { redirectWithToast } from '@/lib/http';
 import { createClient } from '@/lib/supabase/server';
 import { assessmentSchema } from '@/lib/validation/assessment';
-import { formObject, invalid, type FormState } from '@/lib/validation/form';
+import { done, formObject, invalid, type FormState } from '@/lib/validation/form';
 
 export async function saveAssessment(_: FormState, fd: FormData): Promise<FormState> {
   await requireRole('teacher', 'admin');
@@ -27,7 +25,5 @@ export async function saveAssessment(_: FormState, fd: FormData): Promise<FormSt
     : await supabase.from('assessments').insert({ ...values, created_at: new Date(Date.parse(lesson.starts_at) + lesson.duration_min * 60000).toISOString() });
   if (error) return { error: 'Could not save the assessment.', values: raw };
 
-  revalidatePath('/reports');
-  revalidatePath('/dashboard');
-  redirectWithToast(`/reports/${lesson_id}`, existing ? 'Assessment updated' : 'Assessment saved');
+  return done(`/reports/${lesson_id}`, existing ? 'Assessment updated' : 'Assessment saved');
 }

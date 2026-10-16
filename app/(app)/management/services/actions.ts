@@ -1,12 +1,10 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/auth';
 import { addMonths } from '@/lib/dates';
-import { redirectWithToast } from '@/lib/http';
 import { createClient } from '@/lib/supabase/server';
 import { contractSchema, contractUpdateSchema, planSchema } from '@/lib/validation/contract';
-import { formObject, invalid, type FormState } from '@/lib/validation/form';
+import { done, formObject, invalid, type FormState } from '@/lib/validation/form';
 
 const PATH = '/management/services';
 
@@ -22,8 +20,7 @@ export async function createContract(_: FormState, fd: FormData): Promise<FormSt
 
   const { error } = await supabase.from('contracts').insert(parsed.data);
   if (error) return { error: 'Could not create the contract. Please try again.', values: raw };
-  revalidatePath(PATH);
-  redirectWithToast(PATH, `Contract created for ${student.name}`);
+  return done(PATH, `Contract created for ${student.name}`);
 }
 
 export async function updateContract(_: FormState, fd: FormData): Promise<FormState> {
@@ -41,35 +38,32 @@ export async function updateContract(_: FormState, fd: FormData): Promise<FormSt
   }
   const { error } = await supabase.from('contracts').update(values).eq('id', id);
   if (error) return { error: 'Could not save the contract.', values: raw };
-  revalidatePath(PATH);
-  redirectWithToast(PATH, 'Contract updated');
+  return done(PATH, 'Contract updated');
 }
 
-export async function setContractStatus(fd: FormData) {
+export async function setContractStatus(_: FormState, fd: FormData): Promise<FormState> {
   await requireRole('teacher', 'admin');
   const id = String(fd.get('id'));
   const status = fd.get('status') === 'paused' ? 'paused' : 'active';
   const back = String(fd.get('back') || PATH);
   const supabase = await createClient();
   const { error } = await supabase.from('contracts').update({ status }).eq('id', id);
-  if (error) redirectWithToast(back, 'Could not update the contract', 'error');
-  revalidatePath(PATH);
-  redirectWithToast(back, status === 'paused' ? 'Contract paused' : 'Contract resumed');
+  if (error) return done(back, 'Could not update the contract', 'error');
+  return done(back, status === 'paused' ? 'Contract paused' : 'Contract resumed');
 }
 
 /** Extends a contract by 12 months from its current renewal date. */
-export async function renewContract(fd: FormData) {
+export async function renewContract(_: FormState, fd: FormData): Promise<FormState> {
   await requireRole('teacher', 'admin');
   const id = String(fd.get('id'));
   const back = String(fd.get('back') || PATH);
   const supabase = await createClient();
   const { data: c } = await supabase.from('contracts').select('renewal_date').eq('id', id).single();
-  if (!c) redirectWithToast(back, 'Contract not found', 'error');
+  if (!c) return done(back, 'Contract not found', 'error');
   const renewal_date = addMonths(c.renewal_date, 12);
   const { error } = await supabase.from('contracts').update({ renewal_date, status: 'active' }).eq('id', id);
-  if (error) redirectWithToast(back, 'Could not renew the contract', 'error');
-  revalidatePath(PATH);
-  redirectWithToast(back, 'Contract renewed for 12 months');
+  if (error) return done(back, 'Could not renew the contract', 'error');
+  return done(back, 'Contract renewed for 12 months');
 }
 
 export async function savePlan(_: FormState, fd: FormData): Promise<FormState> {
@@ -82,6 +76,5 @@ export async function savePlan(_: FormState, fd: FormData): Promise<FormState> {
     ? await supabase.from('plans').update(parsed.data).eq('id', raw.id)
     : await supabase.from('plans').insert(parsed.data);
   if (error) return { error: 'Could not save the plan.', values: raw };
-  revalidatePath(PATH);
-  redirectWithToast(PATH, raw.id ? 'Plan updated' : 'Plan created');
+  return done(PATH, raw.id ? 'Plan updated' : 'Plan created');
 }

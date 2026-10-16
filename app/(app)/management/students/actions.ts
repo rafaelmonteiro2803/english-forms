@@ -1,11 +1,9 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/auth';
-import { redirectWithToast } from '@/lib/http';
 import { syncLinkedIn } from '@/lib/linkedin';
 import { createClient } from '@/lib/supabase/server';
-import { formObject, invalid, type FormState } from '@/lib/validation/form';
+import { done, formObject, invalid, type FormState } from '@/lib/validation/form';
 import { studentSchema } from '@/lib/validation/student';
 
 const PATH = '/management/students';
@@ -41,22 +39,20 @@ export async function saveStudent(_: FormState, fd: FormData): Promise<FormState
     if (result.error.code === '23505') return { error: 'Please check the highlighted fields.', fieldErrors: { email: ['A student with this email already exists'] }, values: raw };
     return { error: 'Could not save the student. Please try again.', values: raw };
   }
-  revalidatePath(PATH);
-  redirectWithToast(`${PATH}?id=${result.data.id}`, id ? `${values.name} updated` : `${values.name} added`);
+  return done(`${PATH}?id=${result.data.id}`, id ? `${values.name} updated` : `${values.name} added`);
 }
 
-export async function setStudentStatus(fd: FormData) {
+export async function setStudentStatus(_: FormState, fd: FormData): Promise<FormState> {
   await requireRole('teacher', 'admin');
   const id = String(fd.get('id'));
   const status = fd.get('status') === 'paused' ? 'paused' : 'active';
   const supabase = await createClient();
   const { error } = await supabase.from('students').update({ status }).eq('id', id);
-  if (error) redirectWithToast(`${PATH}?id=${id}`, 'Could not update the student', 'error');
-  revalidatePath(PATH);
-  redirectWithToast(`${PATH}?id=${id}`, status === 'paused' ? 'Student paused' : 'Student reactivated');
+  if (error) return done(`${PATH}?id=${id}`, 'Could not update the student', 'error');
+  return done(`${PATH}?id=${id}`, status === 'paused' ? 'Student paused' : 'Student reactivated');
 }
 
-export async function syncStudentLinkedIn(fd: FormData) {
+export async function syncStudentLinkedIn(_: FormState, fd: FormData): Promise<FormState> {
   await requireRole('teacher', 'admin');
   const id = String(fd.get('id'));
   const supabase = await createClient();
@@ -65,6 +61,5 @@ export async function syncStudentLinkedIn(fd: FormData) {
   const result = student?.profile_id
     ? await syncLinkedIn(student.profile_id)
     : { ok: false, message: 'This student has not signed in yet.' };
-  revalidatePath(PATH);
-  redirectWithToast(`${PATH}?id=${id}`, result.message, result.ok ? 'ok' : 'error');
+  return done(`${PATH}?id=${id}`, result.message, result.ok ? 'ok' : 'error');
 }

@@ -17,10 +17,20 @@ export type FormState = {
   /** what the user typed, so the form can show it again (React resets forms after an action) */
   values?: Record<string, string | undefined>;
   ok?: boolean;
+  /** set when a mutation finished: where the form goes next and what to tell the user */
+  done?: { path: string; message: string; tone: 'ok' | 'error'; at: number };
 };
 
 export function invalid(err: z.ZodError, values?: FormState['values']): FormState {
   return { error: 'Please check the highlighted fields.', fieldErrors: z.flattenError(err).fieldErrors as FormState['fieldErrors'], values };
+}
+
+/**
+ * Result of a mutation. The submitting form shows `message` as a toast and
+ * moves to `path`, or refreshes when already there (see useActionDone).
+ */
+export function done(path: string, message: string, tone: 'ok' | 'error' = 'ok'): FormState {
+  return { done: { path, message, tone, at: Date.now() } };
 }
 
 export const id = z.guid({ error: 'Pick an option' });
