@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { syncAll } from '@/lib/google/sync';
 
-// Vercel Cron calls this every 10 minutes (see vercel.json) with
+// Vercel Cron calls this on the schedule in vercel.json (daily on the Hobby plan) with
 // "Authorization: Bearer $CRON_SECRET".
 export const maxDuration = 60;
 
