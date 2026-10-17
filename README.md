@@ -101,7 +101,7 @@ How the sync works (`lib/google/`):
 
 - **App → Google:** creating, editing or cancelling a lesson creates, updates or deletes its event. The student is added as an attendee, and a Google Meet link is added when "Add Google Meet links" is on.
 - **Google → App:** incremental sync with `syncToken`. Lessons moved or deleted in Google are moved or cancelled in the app. Timed events with no matching lesson go to **Needs linking**, where the teacher links them to a student and an active service or ignores them.
-- **When it runs:** on the "Sync now" button and every 10 minutes through the Vercel Cron route `/api/cron/google-sync` (`vercel.json`). The route requires `Authorization: Bearer $CRON_SECRET`, which Vercel sends automatically when `CRON_SECRET` is set. A 10-minute schedule needs a Vercel plan that allows it (Hobby crons run once a day).
+- **When it runs:** on the "Sync now" button and through the Vercel Cron route `/api/cron/google-sync` (`vercel.json`). The schedule is daily at 09:00 UTC (06:00 in São Paulo) because Vercel's Hobby plan only allows daily crons; on Pro, change it to `*/10 * * * *` for a sync every 10 minutes. The route requires `Authorization: Bearer $CRON_SECRET`, which Vercel sends automatically when `CRON_SECRET` is set.
 
 ## Deploy on Vercel
 
