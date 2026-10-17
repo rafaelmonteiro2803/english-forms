@@ -11,6 +11,8 @@ type Props = {
   /** the plan's list price per lesson, for the discount hint */
   listPerLessonCents?: number;
   errors: Record<string, string[] | undefined>;
+  /** label of the monthly amount field (plans use "List price / month") */
+  monthlyLabel?: string;
 };
 
 const OPTIONS: [Billing, string, string][] = [
@@ -19,7 +21,7 @@ const OPTIONS: [Billing, string, string][] = [
 ];
 
 /** Lessons per month + how the contract is charged. Per lesson projects the monthly value. */
-export function BillingFields({ initial, listPerLessonCents, errors }: Props) {
+export function BillingFields({ initial, listPerLessonCents, errors, monthlyLabel = 'Agreed value / month (R$)' }: Props) {
   const [billing, setBilling] = useState<Billing>(initial.billing_type);
   const [lessons, setLessons] = useState(initial.lessons);
   const [price, setPrice] = useState(initial.price);
@@ -59,7 +61,7 @@ export function BillingFields({ initial, listPerLessonCents, errors }: Props) {
             {(p) => <input className="input mono" type="number" min={0} step="0.01" name="lesson_price" value={lessonPrice} onChange={(e) => setLessonPrice(e.target.value)} {...p} />}
           </Field>
         ) : (
-          <Field label="Agreed value / month (R$)" error={errors.price} hint={n && monthlyCents ? `≈ ${fmtMoney(perLessonCents)} per lesson` : undefined}>
+          <Field label={monthlyLabel} error={errors.price} hint={n && monthlyCents ? `≈ ${fmtMoney(perLessonCents)} per lesson` : undefined}>
             {(p) => <input className="input mono" type="number" min={0} step="0.01" name="price" value={price} onChange={(e) => setPrice(e.target.value)} {...p} />}
           </Field>
         )}

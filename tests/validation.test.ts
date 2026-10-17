@@ -128,8 +128,10 @@ describe('contractUpdateSchema and planSchema', () => {
 
   it('validates plan colors and prices', async () => {
     const { planSchema } = await import('@/lib/validation/contract');
-    expect(planSchema.parse({ name: 'Executive 1:1', lessons_per_month: '8', list_price: '2400', color: '#3b82f6' }))
-      .toMatchObject({ list_price_cents: 240000, description: null });
-    expect(planSchema.safeParse({ name: 'X1', lessons_per_month: '8', list_price: '2400', color: 'blue' }).success).toBe(false);
+    expect(planSchema.parse({ name: 'Executive 1:1', lessons_per_month: '8', price: '2400', color: '#3b82f6' }))
+      .toMatchObject({ list_price_cents: 240000, billing_type: 'monthly', lesson_price_cents: null, description: null });
+    expect(planSchema.parse({ name: 'Rafael plan', lessons_per_month: '4', billing_type: 'per_lesson', lesson_price: '170', color: '#3b82f6' }))
+      .toMatchObject({ list_price_cents: 68000, lesson_price_cents: 17000 });
+    expect(planSchema.safeParse({ name: 'X1', lessons_per_month: '8', price: '2400', color: 'blue' }).success).toBe(false);
   });
 });

@@ -78,3 +78,14 @@ export async function savePlan(_: FormState, fd: FormData): Promise<FormState> {
   if (error) return { error: 'Could not save the plan.', values: raw };
   return done(PATH, raw.id ? 'Plan updated' : 'Plan created');
 }
+
+export async function deletePlan(_: FormState, fd: FormData): Promise<FormState> {
+  await requireRole('admin');
+  const id = String(fd.get('id'));
+  const supabase = await createClient();
+  const { count } = await supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('plan_id', id);
+  if (count) return done(PATH, `This plan is used by ${count} contract${count === 1 ? '' : 's'} and can't be deleted`, 'error');
+  const { error } = await supabase.from('plans').delete().eq('id', id);
+  if (error) return done(PATH, 'Could not delete the plan', 'error');
+  return done(PATH, 'Plan deleted');
+}

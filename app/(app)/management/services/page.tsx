@@ -81,7 +81,11 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
                 <h2 className="text-[13px] font-bold text-ink-hi">{p.name}</h2>
                 <p className="mb-3 mt-0.5 min-h-7 text-[11px] text-ink-3">{p.description}</p>
                 <div className="flex items-baseline justify-between">
-                  <span className="mono text-sm font-bold text-ink-hi">{fmtMoney(p.list_price_cents)}</span>
+                  <span className="mono text-sm font-bold text-ink-hi">
+                    {p.billing_type === 'per_lesson' && p.lesson_price_cents != null
+                      ? <>{fmtMoney(p.lesson_price_cents)}<span className="text-[10.5px] font-normal text-ink-3">/lesson</span></>
+                      : <>{fmtMoney(p.list_price_cents)}<span className="text-[10.5px] font-normal text-ink-3">/mo</span></>}
+                  </span>
                   <span className="text-[10.5px] text-ink-3">{p.lessons_per_month} lessons/mo</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
@@ -194,7 +198,7 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
       {editing && planById.get(editing.plan_id) && (
         <EditContractForm contract={editing} plan={planById.get(editing.plan_id)!} studentName={studentById.get(editing.student_id)?.name ?? ''} closeHref={here} />
       )}
-      {(editingPlan || newPlan) && <PlanForm plan={editingPlan} closeHref={here} />}
+      {(editingPlan || newPlan) && <PlanForm plan={editingPlan} inUse={editingPlan ? contracts.filter((c) => c.plan_id === editingPlan.id).length : 0} closeHref={here} />}
     </>
   );
 }
