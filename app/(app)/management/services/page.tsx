@@ -128,7 +128,9 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
                   const p = planById.get(c.plan_id);
                   if (!s || !p) return null;
                   const u = used.get(c.id) ?? 0;
-                  const disc = p.list_price_cents ? Math.round((1 - c.price_cents / p.list_price_cents) * 100) : 0;
+                  // per lesson, so fewer lessons than the plan doesn't read as a discount
+                  const listPerLesson = p.list_price_cents / p.lessons_per_month;
+                  const disc = listPerLesson ? Math.round((1 - c.price_cents / c.lessons_per_month / listPerLesson) * 100) : 0;
                   const renewalSoon = c.status !== 'paused' && c.renewal_date <= soon;
                   return (
                     <li key={c.id} className={`grid ${COLS} items-center gap-3.5 border-b border-line px-4 py-3 ${c.status === 'paused' ? 'opacity-60' : ''}`}>
@@ -146,6 +148,9 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
                       </div>
                       <div>
                         <div className="mono text-[13px] font-bold text-ink-hi">{fmtMoney(c.price_cents)}<span className="text-[10.5px] font-normal text-ink-3">/mo</span></div>
+                        {c.billing_type === 'per_lesson' && c.lesson_price_cents != null && (
+                          <div className="text-[10.5px] text-ink-2">{fmtMoney(c.lesson_price_cents)}/lesson · projected</div>
+                        )}
                         <div className={`text-[10.5px] ${disc > 0 ? 'text-warning' : 'text-ink-3'}`}>{disc > 0 ? `${disc}% below list` : disc < 0 ? `${-disc}% above list` : 'List price'}</div>
                       </div>
                       <span className={`mono text-[11.5px] ${renewalSoon ? 'text-warning' : 'text-ink-2'}`}>{fmtDate(c.renewal_date)}</span>
@@ -183,7 +188,8 @@ export default async function ServicesPage({ searchParams }: { searchParams: SP 
       {param(sp.new) === '1' && (
         <NewContractForm
           students={(students ?? []).filter((s) => s.status === 'active' || s.id === studentFilter).map(({ id, name, company }) => ({ id, name, company }))}
-          plans={plans ?? []} studentId={studentFilter} today={today()} closeHref={here} />
+          plans={plans ?? []} studentId={studentFilter} today={today()} closeHref={here}
+          newPlanHref={profile.role === 'admin' ? withParams(PATH, base, { plan: 'new' }) : undefined} />
       )}
       {editing && planById.get(editing.plan_id) && (
         <EditContractForm contract={editing} plan={planById.get(editing.plan_id)!} studentName={studentById.get(editing.student_id)?.name ?? ''} closeHref={here} />

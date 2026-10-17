@@ -84,7 +84,9 @@ export function StudentDetail({ student: s, avatarUrl, contracts, upcoming, edit
                 <span className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-hi">
                   <span className="h-2 w-2 rounded-sm" style={{ background: c.plan.color }} />{c.plan.name}
                 </span>
-                <span className="mono text-[11.5px] text-ink-2">{fmtMoney(c.price_cents)}/mo</span>
+                <span className="mono text-[11.5px] text-ink-2">
+                  {c.billing_type === 'per_lesson' && c.lesson_price_cents != null ? `${fmtMoney(c.lesson_price_cents)}/lesson · ` : ''}{fmtMoney(c.price_cents)}/mo
+                </span>
               </div>
               <ProgressTrack value={c.used} max={c.lessons_per_month} color={c.plan.color} height={5} glow={false} label={`${c.plan.name} lessons used`} />
               <div className="mt-1.5 flex justify-between text-[10.5px] text-ink-3">

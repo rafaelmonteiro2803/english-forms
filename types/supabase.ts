@@ -85,8 +85,10 @@ export type Database = {
       };
       contracts: {
         Row: {
+          billing_type: Database['public']['Enums']['billing_type'];
           created_at: string;
           id: string;
+          lesson_price_cents: number | null;
           lessons_per_month: number;
           plan_id: string;
           price_cents: number;
@@ -97,8 +99,10 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          billing_type?: Database['public']['Enums']['billing_type'];
           created_at?: string;
           id?: string;
+          lesson_price_cents?: number | null;
           lessons_per_month: number;
           plan_id: string;
           price_cents: number;
@@ -108,8 +112,10 @@ export type Database = {
           student_id: string;
         };
         Update: {
+          billing_type?: Database['public']['Enums']['billing_type'];
           created_at?: string;
           id?: string;
+          lesson_price_cents?: number | null;
           lessons_per_month?: number;
           plan_id?: string;
           price_cents?: number;
@@ -413,6 +419,7 @@ export type Database = {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
+      billing_type: 'monthly' | 'per_lesson';
       contract_status: 'active' | 'paused' | 'ending';
       lesson_status: 'scheduled' | 'done' | 'cancelled';
       student_status: 'active' | 'paused';
@@ -529,6 +536,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      billing_type: ['monthly', 'per_lesson'],
       contract_status: ['active', 'paused', 'ending'],
       lesson_status: ['scheduled', 'done', 'cancelled'],
       student_status: ['active', 'paused'],
