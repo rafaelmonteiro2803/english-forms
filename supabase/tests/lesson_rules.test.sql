@@ -90,3 +90,18 @@ do $$ declare n int; begin
   if n <> 0 then raise exception 'FAIL: teacher edited plans' using errcode = 'EF001'; end if;
 end $$;
 reset role;
+
+-- deleting a student removes their contracts, lessons and assessments;
+-- a contract that still has lessons cannot be deleted on its own
+do $$ declare n int; begin
+  delete from public.students where id = '20000000-0000-0000-0000-000000000006';
+  select count(*) into n from public.lessons where student_id = '20000000-0000-0000-0000-000000000006';
+  if n <> 0 then raise exception 'FAIL: % lessons left after deleting the student', n using errcode = 'EF001'; end if;
+  select count(*) into n from public.contracts where student_id = '20000000-0000-0000-0000-000000000006';
+  if n <> 0 then raise exception 'FAIL: contracts left after deleting the student' using errcode = 'EF001'; end if;
+end $$;
+do $$ begin
+  delete from public.contracts where id = '30000000-0000-0000-0000-000000000001';
+  raise exception 'FAIL: deleted a contract that has lessons' using errcode = 'EF001';
+exception when foreign_key_violation then null;
+end $$;

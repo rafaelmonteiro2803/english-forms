@@ -27,7 +27,7 @@ type Props = {
 const TIMES = Array.from({ length: (DAY_END_MIN - DAY_START_MIN) / 15 }, (_, i) => DAY_START_MIN + i * 15);
 
 export function LessonForm({ students, contractsByStudent, initial, link, googleEmail, addMeet, closeHref }: Props) {
-  const [state, action] = useActionState(saveLesson, {});
+  const [state, action, isPending] = useActionState(saveLesson, {});
   useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
@@ -42,7 +42,7 @@ export function LessonForm({ students, contractsByStudent, initial, link, google
     <Modal title={title} sub={link ? `“${link.summary}”` : 'Every lesson is tied to a student and an active service'} closeHref={closeHref}
       footer={<>
         <Link href={closeHref} scroll={false} className="btn-ghost">Cancel</Link>
-        <SubmitButton form={formId} disabled={!contractId}><Icon name="check" size={15} />{initial.id ? 'Save lesson' : link ? 'Link event' : googleEmail ? 'Create & sync' : 'Create lesson'}</SubmitButton>
+        <SubmitButton form={formId} pending={isPending} disabled={!contractId}><Icon name="check" size={15} />{initial.id ? 'Save lesson' : link ? 'Link event' : googleEmail ? 'Create & sync' : 'Create lesson'}</SubmitButton>
       </>}>
       <form id={formId} action={action} noValidate className="flex flex-col gap-3.5">
         {initial.id && <input type="hidden" name="id" value={initial.id} />}

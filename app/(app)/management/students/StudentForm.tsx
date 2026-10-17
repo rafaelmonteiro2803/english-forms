@@ -20,7 +20,7 @@ type Props = {
 };
 
 export function StudentForm({ student, closeHref, today, teachers }: Props) {
-  const [state, action] = useActionState(saveStudent, {});
+  const [state, action, isPending] = useActionState(saveStudent, {});
   useActionDone(state);
   const e = state.fieldErrors ?? {};
   const s = student;
@@ -33,7 +33,7 @@ export function StudentForm({ student, closeHref, today, teachers }: Props) {
       closeHref={closeHref} width={580}
       footer={<>
         <Link href={closeHref} scroll={false} className="btn-ghost">Cancel</Link>
-        <SubmitButton form={formId}><Icon name="check" size={15} />{s ? 'Save changes' : 'Create student'}</SubmitButton>
+        <SubmitButton form={formId} pending={isPending}><Icon name="check" size={15} />{s ? 'Save changes' : 'Create student'}</SubmitButton>
       </>}>
       <form id={formId} action={action} noValidate className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         {s && <input type="hidden" name="id" value={s.id} />}

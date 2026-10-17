@@ -277,26 +277,32 @@ export type Database = {
       };
       plans: {
         Row: {
+          billing_type: Database['public']['Enums']['billing_type'];
           color: string;
           description: string | null;
           id: string;
+          lesson_price_cents: number | null;
           lessons_per_month: number;
           list_price_cents: number;
           name: string;
         };
         ComputedFields: never;
         Insert: {
+          billing_type?: Database['public']['Enums']['billing_type'];
           color: string;
           description?: string | null;
           id?: string;
+          lesson_price_cents?: number | null;
           lessons_per_month: number;
           list_price_cents: number;
           name: string;
         };
         Update: {
+          billing_type?: Database['public']['Enums']['billing_type'];
           color?: string;
           description?: string | null;
           id?: string;
+          lesson_price_cents?: number | null;
           lessons_per_month?: number;
           list_price_cents?: number;
           name?: string;

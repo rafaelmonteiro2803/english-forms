@@ -1,6 +1,7 @@
 import { ActionForm } from '@/components/ui/ActionForm';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/Avatar';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { LinkedInMark } from '@/components/ui/Brand';
 import { Icon } from '@/components/ui/Icon';
 import { ProgressTrack } from '@/components/ui/ProgressTrack';
@@ -9,7 +10,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton';
 import { fmtDate, fmtDayTime, fmtMoney, fmtRelative, firstName } from '@/lib/format';
 import type { Contract, Plan, Student } from '@/types/database';
-import { setStudentStatus, syncStudentLinkedIn } from './actions';
+import { deleteStudent, setStudentStatus, syncStudentLinkedIn } from './actions';
 
 type Props = {
   student: Student;
@@ -117,12 +118,22 @@ export function StudentDetail({ student: s, avatarUrl, contracts, upcoming, edit
         ) : <p className="text-xs text-ink-3">Nothing scheduled.</p>}
       </div>
 
-      <ActionForm action={setStudentStatus} className="flex items-center justify-between gap-2 p-[18px]">
-        <input type="hidden" name="id" value={s.id} />
-        <input type="hidden" name="status" value={s.status === 'active' ? 'paused' : 'active'} />
-        <span className="text-[11px] text-ink-3">{s.status === 'active' ? 'Pausing hides the student from scheduling.' : 'This student is paused.'}</span>
-        <SubmitButton className="btn-seg" pendingLabel="…">{s.status === 'active' ? 'Pause student' : 'Reactivate'}</SubmitButton>
-      </ActionForm>
+      <div className="flex flex-col gap-3 p-[18px]">
+        <ActionForm action={setStudentStatus} className="flex items-center justify-between gap-2">
+          <input type="hidden" name="id" value={s.id} />
+          <input type="hidden" name="status" value={s.status === 'active' ? 'paused' : 'active'} />
+          <span className="text-[11px] text-ink-3">{s.status === 'active' ? 'Pausing hides the student from scheduling.' : 'This student is paused.'}</span>
+          <SubmitButton className="btn-seg" pendingLabel="…">{s.status === 'active' ? 'Pause student' : 'Reactivate'}</SubmitButton>
+        </ActionForm>
+        <ActionForm action={deleteStudent} className="flex items-center justify-between gap-2 border-t border-line pt-3">
+          <input type="hidden" name="id" value={s.id} />
+          <span className="text-[11px] text-ink-3">Removes contracts, lessons and assessments too.</span>
+          <ConfirmButton className="btn-seg border-risk/35 text-risk" pendingLabel="Deleting…"
+            confirm={`Delete ${s.name}? Their contracts, lessons and assessments will be removed too. This cannot be undone.`}>
+            Delete student
+          </ConfirmButton>
+        </ActionForm>
+      </div>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { requireRole } from '@/lib/auth';
+import { pushLesson } from '@/lib/google/sync';
 import { syncLinkedIn } from '@/lib/linkedin';
 import { createClient } from '@/lib/supabase/server';
 import { done, formObject, invalid, type FormState } from '@/lib/validation/form';
@@ -62,4 +63,25 @@ export async function syncStudentLinkedIn(_: FormState, fd: FormData): Promise<F
     ? await syncLinkedIn(student.profile_id)
     : { ok: false, message: 'This student has not signed in yet.' };
   return done(`${PATH}?id=${id}`, result.message, result.ok ? 'ok' : 'error');
+}
+
+/** Deletes a student with their contracts, lessons and assessments (the database cascades). */
+export async function deleteStudent(_: FormState, fd: FormData): Promise<FormState> {
+  await requireRole('teacher', 'admin');
+  const id = String(fd.get('id'));
+  const supabase = await createClient();
+  const { data: student } = await supabase.from('students').select('name').eq('id', id).single();
+  if (!student) return done(PATH, 'Student not found', 'error');
+
+  // take upcoming lessons off Google Calendar before their rows disappear
+  const { data: synced } = await supabase.from('lessons').select('id')
+    .eq('student_id', id).eq('status', 'scheduled').not('google_event_id', 'is', null);
+  for (const l of synced ?? []) {
+    await supabase.from('lessons').update({ status: 'cancelled' }).eq('id', l.id);
+    await pushLesson(l.id);
+  }
+
+  const { error } = await supabase.from('students').delete().eq('id', id);
+  if (error) return done(`${PATH}?id=${id}`, 'Could not delete the student', 'error');
+  return done(PATH, `${student.name} deleted`);
 }

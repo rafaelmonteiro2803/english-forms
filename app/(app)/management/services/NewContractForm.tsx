@@ -25,7 +25,7 @@ type Props = {
 };
 
 export function NewContractForm({ students, plans, studentId, today, closeHref, newPlanHref }: Props) {
-  const [state, action] = useActionState(createContract, {});
+  const [state, action, isPending] = useActionState(createContract, {});
   useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
@@ -40,17 +40,17 @@ export function NewContractForm({ students, plans, studentId, today, closeHref, 
   const typed = v && v.plan_id === planId;
   const lessonsDefault = String(plan?.lessons_per_month ?? 4);
   const billingInitial = {
-    billing_type: (typed ? v.billing_type : 'monthly') === 'per_lesson' ? ('per_lesson' as const) : ('monthly' as const),
+    billing_type: (typed ? v.billing_type : plan?.billing_type) === 'per_lesson' ? ('per_lesson' as const) : ('monthly' as const),
     lessons: typed ? v.lessons_per_month ?? '' : lessonsDefault,
     price: typed ? v.price ?? '' : String((plan?.list_price_cents ?? 0) / 100),
-    lesson_price: typed ? v.lesson_price ?? '' : plan ? String(Math.round(plan.list_price_cents / plan.lessons_per_month) / 100) : '',
+    lesson_price: typed ? v.lesson_price ?? '' : plan ? String((plan.lesson_price_cents ?? Math.round(plan.list_price_cents / plan.lessons_per_month)) / 100) : '',
   };
 
   return (
     <Modal title="New contract" sub="Link a service to a student" closeHref={closeHref}
       footer={<>
         <Link href={closeHref} scroll={false} className="btn-ghost">Cancel</Link>
-        <SubmitButton form={formId} disabled={!plans.length || !students.length}><Icon name="check" size={15} />Create contract</SubmitButton>
+        <SubmitButton form={formId} pending={isPending} disabled={!plans.length || !students.length}><Icon name="check" size={15} />Create contract</SubmitButton>
       </>}>
       <form id={formId} action={action} noValidate className="flex flex-col gap-3.5">
         <Field label="Student" error={e.student_id}>
@@ -74,7 +74,7 @@ export function NewContractForm({ students, plans, studentId, today, closeHref, 
                     <span className="h-2 w-2 shrink-0 rounded-sm" style={{ background: p.color }} />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[12.5px] font-semibold text-ink-hi">{p.name}</span>
-                      <span className="mono text-[10.5px] text-ink-3">{p.lessons_per_month}/mo · {fmtMoney(p.list_price_cents)}</span>
+                      <span className="mono text-[10.5px] text-ink-3">{p.lessons_per_month}/mo · {p.billing_type === 'per_lesson' && p.lesson_price_cents != null ? `${fmtMoney(p.lesson_price_cents)}/lesson` : fmtMoney(p.list_price_cents)}</span>
                     </span>
                   </button>
                 );

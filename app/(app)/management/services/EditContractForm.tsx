@@ -13,7 +13,7 @@ import { updateContract } from './actions';
 import { BillingFields } from './BillingFields';
 
 export function EditContractForm({ contract: c, plan, studentName, closeHref }: { contract: Contract; plan: Plan; studentName: string; closeHref: string }) {
-  const [state, action] = useActionState(updateContract, {});
+  const [state, action, isPending] = useActionState(updateContract, {});
   useActionDone(state);
   const v = state.values;
   const e = state.fieldErrors ?? {};
@@ -22,7 +22,7 @@ export function EditContractForm({ contract: c, plan, studentName, closeHref }: 
     <Modal title={`${plan.name} · ${studentName}`} sub={`Started ${fmtDate(c.start_date)} · list price ${fmtMoney(plan.list_price_cents)}`} closeHref={closeHref}
       footer={<>
         <Link href={closeHref} scroll={false} className="btn-ghost">Cancel</Link>
-        <SubmitButton form={formId}><Icon name="check" size={15} />Save contract</SubmitButton>
+        <SubmitButton form={formId} pending={isPending}><Icon name="check" size={15} />Save contract</SubmitButton>
       </>}>
       <form id={formId} action={action} noValidate className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <input type="hidden" name="id" value={c.id} />
