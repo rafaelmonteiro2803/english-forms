@@ -10,6 +10,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 import { fmtDate, fmtMoney } from '@/lib/format';
 import type { Contract, Plan } from '@/types/database';
 import { updateContract } from './actions';
+import { BillingFields } from './BillingFields';
 
 export function EditContractForm({ contract: c, plan, studentName, closeHref }: { contract: Contract; plan: Plan; studentName: string; closeHref: string }) {
   const [state, action] = useActionState(updateContract, {});
@@ -25,12 +26,14 @@ export function EditContractForm({ contract: c, plan, studentName, closeHref }: 
       </>}>
       <form id={formId} action={action} noValidate className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <input type="hidden" name="id" value={c.id} />
-        <Field label="Lessons per month" error={e.lessons_per_month}>
-          {(p) => <input className="input mono" type="number" min={1} name="lessons_per_month" defaultValue={v?.lessons_per_month ?? c.lessons_per_month} {...p} />}
-        </Field>
-        <Field label="Agreed value / month (R$)" error={e.price}>
-          {(p) => <input className="input mono" type="number" min={0} step="0.01" name="price" defaultValue={v?.price ?? c.price_cents / 100} {...p} />}
-        </Field>
+        <div className="col-span-full flex flex-col gap-3.5">
+          <BillingFields errors={e} listPerLessonCents={Math.round(plan.list_price_cents / plan.lessons_per_month)} initial={{
+            billing_type: (v?.billing_type ?? c.billing_type) === 'per_lesson' ? 'per_lesson' : 'monthly',
+            lessons: v?.lessons_per_month ?? String(c.lessons_per_month),
+            price: v?.price ?? String(c.price_cents / 100),
+            lesson_price: v?.lesson_price ?? (c.lesson_price_cents != null ? String(c.lesson_price_cents / 100) : ''),
+          }} />
+        </div>
         <Field label="Renewal date" error={e.renewal_date}>
           {(p) => <input className="input" type="date" name="renewal_date" defaultValue={v?.renewal_date ?? c.renewal_date} {...p} />}
         </Field>

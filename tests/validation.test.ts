@@ -64,6 +64,18 @@ describe('contractSchema', () => {
     expect(contractSchema.parse(base)).toMatchObject({ lessons_per_month: 8, price_cents: 228000, renewal_date: '2027-10-19' });
   });
 
+  it('charges per lesson: projects the monthly value', () => {
+    expect(contractSchema.parse({ ...base, price: undefined, billing_type: 'per_lesson', lesson_price: '170', lessons_per_month: '4' }))
+      .toMatchObject({ billing_type: 'per_lesson', lesson_price_cents: 17000, price_cents: 68000 });
+  });
+
+  it('requires the amount that matches the billing type', () => {
+    const perLesson = contractSchema.safeParse({ ...base, billing_type: 'per_lesson', lesson_price: undefined });
+    expect(perLesson.error?.issues[0]?.path).toEqual(['lesson_price']);
+    expect(contractSchema.safeParse({ ...base, price: undefined }).success).toBe(false);
+    expect(contractSchema.parse(base)).toMatchObject({ billing_type: 'monthly', lesson_price_cents: null });
+  });
+
   it('rejects zero lessons, negative prices and unknown terms', () => {
     expect(contractSchema.safeParse({ ...base, lessons_per_month: '0' }).success).toBe(false);
     expect(contractSchema.safeParse({ ...base, price: '-1' }).success).toBe(false);
@@ -108,7 +120,9 @@ describe('contractUpdateSchema and planSchema', () => {
   it('updates a contract and converts the price', async () => {
     const { contractUpdateSchema } = await import('@/lib/validation/contract');
     expect(contractUpdateSchema.parse({ id: ID2, lessons_per_month: '12', price: '3150.5', renewal_date: '2027-11-11', status: 'ending' }))
-      .toMatchObject({ price_cents: 315050, status: 'ending' });
+      .toMatchObject({ price_cents: 315050, status: 'ending', billing_type: 'monthly' });
+    expect(contractUpdateSchema.parse({ id: ID2, lessons_per_month: '8', billing_type: 'per_lesson', lesson_price: '150', renewal_date: '2027-11-11', status: 'active' }))
+      .toMatchObject({ price_cents: 120000, lesson_price_cents: 15000 });
     expect(contractUpdateSchema.safeParse({ id: ID2, lessons_per_month: '12', price: '10', renewal_date: '2027-11-11', status: 'done' }).success).toBe(false);
   });
 
