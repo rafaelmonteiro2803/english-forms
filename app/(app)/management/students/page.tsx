@@ -64,7 +64,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: SP 
   const editing = param(sp.edit) ? students.find((s) => s.id === param(sp.edit)) : undefined;
   const creating = param(sp.new) === '1';
   const closeHref = withParams(PATH, { ...base, id: selected?.id });
-  const teachers = profile.role === 'admin' && creating
+  const teachers = profile.role === 'admin' && (creating || editing)
     ? (await supabase.from('profiles').select('id, name').eq('role', 'teacher').order('name')).data ?? []
     : undefined;
 

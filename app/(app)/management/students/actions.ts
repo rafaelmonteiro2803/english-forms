@@ -28,14 +28,23 @@ export async function saveStudent(_: FormState, fd: FormData): Promise<FormState
   const supabase = await createClient();
   const id = raw.id;
 
+  let reassignTo = profile.role === 'admin' && id && isGuid(raw.teacher_id) ? raw.teacher_id : null;
+  if (reassignTo) {
+    const { data: t } = await supabase.from('profiles').select('role').eq('id', reassignTo).maybeSingle();
+    if (t?.role !== 'teacher') reassignTo = null;
+  }
   const result = id
-    ? await supabase.from('students').update(values).eq('id', id).select('id').single()
+    ? await supabase.from('students').update(reassignTo ? { ...values, teacher_id: reassignTo } : values).eq('id', id).select('id').single()
     : await supabase
         .from('students')
         .insert({ ...values, teacher_id: profile.role === 'admin' && isGuid(raw.teacher_id) ? raw.teacher_id : profile.id })
         .select('id')
         .single();
 
+  if (!result.error && reassignTo) {
+    // a lesson's teacher must be the student's teacher (database trigger)
+    await supabase.from('lessons').update({ teacher_id: reassignTo }).eq('student_id', result.data.id).neq('teacher_id', reassignTo);
+  }
   if (result.error) {
     if (result.error.code === '23505') return { error: 'Please check the highlighted fields.', fieldErrors: { email: ['A student with this email already exists'] }, values: raw };
     return { error: 'Could not save the student. Please try again.', values: raw };

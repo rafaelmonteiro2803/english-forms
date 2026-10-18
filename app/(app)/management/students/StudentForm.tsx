@@ -78,10 +78,10 @@ export function StudentForm({ student, closeHref, today, teachers }: Props) {
             )}
           </Field>
         )}
-        {teachers && !s && (
-          <Field label="Teacher *">
+        {teachers && (
+          <Field label="Teacher *" hint={s ? 'Changing it moves this student’s lessons too.' : undefined}>
             {(p) => (
-              <select className="input" name="teacher_id" {...p}>
+              <select className="input" name="teacher_id" defaultValue={v('teacher_id')} {...p}>
                 {teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             )}

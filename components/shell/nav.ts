@@ -11,6 +11,7 @@ const ALL: (NavItem & { roles: UserRole[]; labs?: boolean })[] = [
   { href: '/proficiency', label: 'Proficiency', icon: 'trending', group: 'Insights', roles: ['student', 'teacher', 'admin'] },
   { href: '/teacher', label: 'Teacher View', icon: 'users', group: 'Manage', roles: ['teacher', 'admin'] },
   { href: '/admin', label: 'Admin', icon: 'building', group: 'Manage', roles: ['admin'] },
+  { href: '/management/teachers', label: 'Teachers', icon: 'award', group: 'Management', roles: ['admin'] },
   { href: '/management/students', label: 'Students', icon: 'users', group: 'Management', roles: ['teacher', 'admin'] },
   { href: '/management/services', label: 'Services', icon: 'file', group: 'Management', roles: ['teacher', 'admin'] },
   { href: '/management/calendar', label: 'Calendar', icon: 'calendar', group: 'Management', roles: ['teacher', 'admin'] },

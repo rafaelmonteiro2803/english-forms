@@ -135,3 +135,12 @@ describe('contractUpdateSchema and planSchema', () => {
     expect(planSchema.safeParse({ name: 'X1', lessons_per_month: '8', price: '2400', color: 'blue' }).success).toBe(false);
   });
 });
+
+describe('teacherSchema', () => {
+  it('normalizes the email and makes the password optional', async () => {
+    const { teacherSchema } = await import('@/lib/validation/teacher');
+    expect(teacherSchema.parse({ name: 'Sofia Reyes', email: 'Sofia@EnglishForms.com' })).toEqual({ name: 'Sofia Reyes', email: 'sofia@englishforms.com' });
+    expect(teacherSchema.safeParse({ name: 'Sofia Reyes', email: 'sofia@x.com', password: 'short' }).success).toBe(false);
+    expect(teacherSchema.safeParse({ name: 'S', email: 'sofia@x.com' }).success).toBe(false);
+  });
+});
