@@ -11,6 +11,7 @@ The visual and functional reference is the prototype in `design/prototype/`.
 | Route | Who | What |
 |---|---|---|
 | `/login` | everyone | Email/password, Google and LinkedIn sign-in, password reset |
+| `/management/teachers` | admin | Create, edit and delete teachers (logins), moving their students on delete |
 | `/management/students` | teacher, admin | List with search and filters, profile, add/edit, WhatsApp (`wa.me`) |
 | `/management/services` | teacher, admin | Plan catalog, contracts with usage this month, renew, pause/resume |
 | `/management/calendar` | teacher, admin | Week view, lessons, Google Calendar sync, "Needs linking" |
@@ -74,7 +75,7 @@ Migrations live in `supabase/migrations/`:
 - **Billing:** a contract is charged either per month (a fixed `price_cents`) or per lesson (`lesson_price_cents`). For per-lesson contracts, `price_cents` holds the projected monthly value: price per lesson × lessons per month.
 - **"Lessons used this month" is never stored.** It is counted from `lessons` with status `done` in the current month (`lib/data/usage.ts`), using `NEXT_PUBLIC_APP_TIMEZONE`.
 - **Student logins:** when someone signs up with an email that matches a student record, the two are linked automatically.
-- **Promoting a user:** new users start as `student`. An admin promotes a teacher or admin in the Supabase dashboard (or SQL): `update profiles set role = 'teacher' where email = '…';`
+- **Teachers:** admins create, edit and delete teachers in **Management → Teachers** (this creates the login). Deleting a teacher moves their students and lessons to another teacher. New users who sign up on their own start as `student`; admins are promoted in SQL: `update profiles set role = 'admin' where email = '…';`
 
 ## Authentication setup (Supabase)
 
