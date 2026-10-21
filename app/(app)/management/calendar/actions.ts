@@ -3,7 +3,7 @@
 import { requireRole } from '@/lib/auth';
 import { zonedTime } from '@/lib/dates';
 import { revoke } from '@/lib/google/oauth';
-import { pushLesson, syncTeacher, type PushResult } from '@/lib/google/sync';
+import { pushLesson, pushPendingLessons, syncTeacher, type PushResult } from '@/lib/google/sync';
 import { decrypt } from '@/lib/crypto';
 import { canScheduleLesson } from '@/lib/rules/lesson';
 import { createClient } from '@/lib/supabase/server';
@@ -75,14 +75,16 @@ export async function setLessonStatus(_: FormState, fd: FormData): Promise<FormS
 
 export async function syncGoogleNow(_: FormState, fd: FormData): Promise<FormState> {
   const profile = await requireRole('teacher');
-  let changed: number | null = null;
   try {
-    changed = await syncTeacher(profile.id);
+    const changed = await syncTeacher(profile.id);
+    const { pushed, failed } = await pushPendingLessons(profile.id);
+    const parts = [changed && `${changed} change${changed === 1 ? '' : 's'}`, pushed && `${pushed} lesson${pushed === 1 ? '' : 's'} sent`].filter(Boolean);
+    if (failed) return done(back(fd), `Google sync: ${failed} lesson${failed === 1 ? '' : 's'} could not be sent`, 'error');
+    return done(back(fd), `Google Calendar synced${parts.length ? ` · ${parts.join(' · ')}` : ''}`);
   } catch (err) {
     console.error('Google sync failed', err);
+    return done(back(fd), 'Google sync failed. Try reconnecting.', 'error');
   }
-  if (changed === null) return done(back(fd), 'Google sync failed. Try reconnecting.', 'error');
-  return done(back(fd), changed ? `Google Calendar synced · ${changed} change${changed === 1 ? '' : 's'}` : 'Google Calendar synced');
 }
 
 export async function setAddMeet(_: FormState, fd: FormData): Promise<FormState> {

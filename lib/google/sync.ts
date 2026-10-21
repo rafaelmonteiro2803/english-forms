@@ -62,6 +62,17 @@ export async function pushLesson(lessonId: string): Promise<PushResult> {
   }
 }
 
+/** Sends upcoming lessons that aren't on Google yet (e.g. created before the teacher connected). */
+export async function pushPendingLessons(teacherId: string) {
+  const admin = createAdminClient();
+  const { data } = await admin.from('lessons').select('id')
+    .eq('teacher_id', teacherId).eq('status', 'scheduled').is('google_event_id', null)
+    .gte('starts_at', new Date().toISOString()).order('starts_at').limit(100);
+  let failed = 0;
+  for (const l of data ?? []) if ((await pushLesson(l.id)) === 'failed') failed++;
+  return { pushed: (data?.length ?? 0) - failed, failed };
+}
+
 const KEEP_UNLINKED_DAYS = 60;
 
 /** Google → App for one teacher. Returns how many events changed. */

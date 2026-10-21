@@ -4,9 +4,11 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 // AES-256-GCM for secrets at rest (Google refresh tokens).
 // Stored as "v1:" + base64(iv | auth tag | ciphertext).
 
+export class TokenKeyError extends Error {}
+
 function key() {
   const k = Buffer.from(process.env.GOOGLE_TOKEN_KEY ?? '', 'base64');
-  if (k.length !== 32) throw new Error('GOOGLE_TOKEN_KEY must be 32 bytes, base64-encoded');
+  if (k.length !== 32) throw new TokenKeyError('GOOGLE_TOKEN_KEY is missing or not 32 bytes (create one with: openssl rand -base64 32)');
   return k;
 }
 
