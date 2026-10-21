@@ -5,6 +5,9 @@ import 'server-only';
 
 const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/calendar.events'];
 
+/** A connection problem with a message the teacher can act on. */
+export class GoogleConnectError extends Error {}
+
 export const googleConfigured = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
 export function authUrl(state: string, redirectUri: string) {
@@ -28,14 +31,20 @@ async function tokenRequest(body: Record<string, string>) {
     body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID!, client_secret: process.env.GOOGLE_CLIENT_SECRET!, ...body }),
     cache: 'no-store',
   });
-  if (!res.ok) throw new Error(`Google token request failed (${res.status})`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string; error_description?: string };
+    console.error('Google token request failed', res.status, body);
+    if (body.error === 'redirect_uri_mismatch') throw new GoogleConnectError('Google rejected the return address. Check the redirect URI in Google Cloud and NEXT_PUBLIC_SITE_URL.');
+    if (body.error === 'invalid_client') throw new GoogleConnectError('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is wrong.');
+    throw new Error(`Google token request failed (${res.status} ${body.error ?? ''})`);
+  }
   return (await res.json()) as { access_token: string; refresh_token?: string; id_token?: string; scope?: string };
 }
 
 export async function exchangeCode(code: string, redirectUri: string) {
   const t = await tokenRequest({ code, redirect_uri: redirectUri, grant_type: 'authorization_code' });
-  if (!t.refresh_token) throw new Error('Google did not return a refresh token');
-  if (!t.scope?.includes('calendar.events')) throw new Error('Calendar access was not granted');
+  if (!t.scope?.includes('calendar.events')) throw new GoogleConnectError('Calendar access was not granted. On Google’s screen, tick the Google Calendar permission and try again.');
+  if (!t.refresh_token) throw new GoogleConnectError('Google did not grant offline access. Remove English Forms at myaccount.google.com/permissions and connect again.');
   return { refreshToken: t.refresh_token, email: emailFromIdToken(t.id_token) };
 }
 
