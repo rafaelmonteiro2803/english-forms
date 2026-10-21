@@ -20,6 +20,7 @@ The visual and functional reference is the prototype in `design/prototype/`.
 | `/proficiency` | everyone | CEFR ladder, projection, exam equivalence |
 | `/teacher` | teacher, admin | Cohort ranking, students at risk |
 | `/admin` | admin | School KPIs |
+| `/finance` | teacher, admin | Monthly revenue: realized (done lessons), scheduled and contracted. Admins see all teachers and open each teacher's statement; teachers see their own statement |
 | `/labs/simulator`, `/labs/live-class` | everyone | UI previews with sample data, only when `FEATURE_AI_LABS=true` |
 
 ## Run it locally
@@ -73,6 +74,7 @@ Migrations live in `supabase/migrations/`:
 - **RLS on every table.** Admins see everything, teachers see their own students and everything attached to them, and students see only their own record, contracts, lessons and assessments. Users can edit their own name and photo, but not their role.
 - **A lesson needs a running contract of the same student.** A composite foreign key `(contract_id, student_id)` guarantees ownership. The `lessons_enforce_contract` trigger rejects new lessons (or lessons moved to another contract) when the contract is paused, or when the teacher doesn't teach that student. Server Actions run the same check first (`lib/rules/lesson.ts`) so the form can explain why. A contract marked "Renewal due" (`ending`) is still in force and accepts lessons.
 - **Billing:** a contract is charged either per month (a fixed `price_cents`) or per lesson (`lesson_price_cents`). For per-lesson contracts, `price_cents` holds the projected monthly value: price per lesson × lessons per month.
+- **Finance:** a lesson is worth its contract's price per lesson (monthly contracts: the monthly value split over the lessons per month). Done lessons are realized, scheduled ones expected, cancelled ones worth nothing. A running contract also projects its monthly value for each month (`lib/finance.ts`).
 - **"Lessons used this month" is never stored.** It is counted from `lessons` with status `done` in the current month (`lib/data/usage.ts`), using `NEXT_PUBLIC_APP_TIMEZONE`.
 - **Student logins:** when someone signs up with an email that matches a student record, the two are linked automatically.
 - **Teachers:** admins create, edit and delete teachers in **Management → Teachers** (this creates the login). Deleting a teacher moves their students and lessons to another teacher. New users who sign up on their own start as `student`; admins are promoted in SQL: `update profiles set role = 'admin' where email = '…';`
